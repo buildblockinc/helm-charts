@@ -1,0 +1,63 @@
+name: Release Helm Charts
+
+concurrency: release-helm
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'temp/**'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.WORKFLOW_TOKEN }}
+          path: 'src'
+          ref: 'main'
+          fetch-depth: 0
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.WORKFLOW_TOKEN }}
+          path: 'dest'
+          ref: 'gh-pages'
+          fetch-depth: 0
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+
+      - name: Update New Files and push to main branch
+        shell: bash
+        working-directory: src
+        run: |
+          helm repo index ./temp --merge ../dest/index.yaml --url https://raw.githubusercontent.com/buildblockinc/helm-charts/gh-pages/helm/
+          mkdir -p ../dest/helm
+          echo "Copying files..."
+          shopt -s extglob
+          mkdir -p ./helm/
+          echo "n" | cp -pr ./temp/!(index.yaml) ../dest/helm/
+          echo "n" | cp -pr ./temp/!(index.yaml) ./helm/
+          echo "n" | cp -pr ./temp/index.yaml ../dest/
+          echo "y" | rm -rf ./temp/*
+          git config --global user.name 'buildblock CI bot'
+          git config --global user.email 'buildblock-ci-bot@noreply.buildblock.io'
+          git commit -am "ci: Updated from ref: $GITHUB_SHA"
+          git push
+
+      - name: Push New Files
+        shell: bash
+        working-directory: dest
+        run: |
+          git config --global user.name 'buildblock CI bot'
+          git config --global user.email 'buildblock-ci-bot@noreply.buildblock.io'
+          git add $(git ls-files -o --exclude-standard)
+          git add index.yaml
+          git commit -am "ci: Updated from ref: $GITHUB_SHA"
+          git push
