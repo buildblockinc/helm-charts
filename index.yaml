@@ -1,0 +1,14 @@
+apiVersion: v1
+entries:
+  app-generic:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2025-01-17T14:38:35.513356672Z"
+    description: A Helm chart for Kubernetes
+    digest: d0a668c54eaecd16091eb90f33f22a91bb426bf91c4bbab25cf420d39cefaacc
+    name: app-generic
+    type: application
+    urls:
+    - https://raw.githubusercontent.com/buildblockinc/helm-charts/gh-pages/helm/app-generic-0.1.0.tgz
+    version: 0.1.0
+generated: "2025-01-17T14:38:35.512813696Z"
